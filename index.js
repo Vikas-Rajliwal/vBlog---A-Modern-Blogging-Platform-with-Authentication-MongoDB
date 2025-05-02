@@ -14,7 +14,7 @@ const {
 } = require("./middlewares/authentication");
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+
 // const db =process.env.dbPORT;
 // console.log(db);
 
@@ -41,4 +41,4 @@ app.get("/", async (req, res) => {
 app.use("/user", userRoute);
 app.use("/blog", blogRoute);
 
-app.listen(PORT, () => console.log(`Server Started at PORT:${PORT}`));
+app.listen(process.env.PORT || 8000, () => console.log(`Server Started at PORT:${process.env.PORT}`));
