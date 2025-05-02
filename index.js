@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -16,9 +15,11 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+// const db =process.env.dbPORT;
+// console.log(db);
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/vBlog")
+  .connect(process.env.dbPORT)
   .then((e) => console.log("MongoDB Connected"));
 
 app.set("view engine", "ejs");
