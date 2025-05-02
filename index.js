@@ -3,8 +3,9 @@ const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
 const cookiePaser = require("cookie-parser");
-
+const cors =require('cors');
 const Blog = require("./models/blog");
+
 
 const userRoute = require("./routes/user");
 const blogRoute = require("./routes/blog");
@@ -14,6 +15,12 @@ const {
 } = require("./middlewares/authentication");
 
 const app = express();
+// stting cors of frontend
+app.use(
+  cors({
+    origin: 'http://localhost:5173/',
+  }))
+  ;
 
 // const db =process.env.dbPORT;
 // console.log(db);
