@@ -1,6 +1,6 @@
 const { createHmac, randomBytes } = require("crypto");
-const { Schema, model } = require("mongoose");
-const { createTokenForUser } = require("../services/authentication");
+const { Schema, model, mongoose } = require("mongoose");
+const { createTokenForUser } = require("../utils/jwtHelper"); // use a dedicated utility file
 
 const userSchema = new Schema(
   {
@@ -24,23 +24,19 @@ const userSchema = new Schema(
       type: String,
       default: "./images/default.png",
     },
-    role: {
-      type: String,
-      enum: ["USER", "ADMIN"],
-      default: "USER",
-    },
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
+// 🔐 Hash password before saving user
 userSchema.pre("save", function (next) {
-  const user = this;
+  if (!this.isModified("password")) return next();
 
-  if (!user.isModified("password")) return;
-
-  const salt = randomBytes(16).toString();
+  const salt = randomBytes(16).toString("hex");
   const hashedPassword = createHmac("sha256", salt)
-    .update(user.password)
+    .update(this.password)
     .digest("hex");
 
   this.salt = salt;
@@ -49,27 +45,24 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+// 🔑 Match password and generate JWT token
 userSchema.static(
   "matchPasswordAndGenerateToken",
   async function (email, password) {
     const user = await this.findOne({ email });
     if (!user) throw new Error("User not found!");
 
-    const salt = user.salt;
-    const hashedPassword = user.password;
-
-    const userProvidedHash = createHmac("sha256", salt)
+    const userProvidedHash = createHmac("sha256", user.salt)
       .update(password)
       .digest("hex");
 
-    if (hashedPassword !== userProvidedHash)
-      throw new Error("Incorrect Password");
+    if (user.password !== userProvidedHash)
+      throw new Error("Incorrect password!");
 
-    const token = createTokenForUser(user);
-    return token;
+    const token = createTokenForUser(user); // JWT generation
+    return { token, user };
   }
 );
 
-const User = model("user", userSchema);
-
-module.exports = User;
+const User = model("User", userSchema);
+module.exports = mongoose.model("user", userSchema);

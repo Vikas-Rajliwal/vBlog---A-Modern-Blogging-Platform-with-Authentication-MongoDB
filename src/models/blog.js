@@ -2,7 +2,7 @@ const { Schema, model } = require("mongoose");
 
 const blogSchema = new Schema(
   {
-    title: {
+    tittle: {
       type: String,
       required: true,
     },
@@ -11,8 +11,8 @@ const blogSchema = new Schema(
       required: true,
     },
     coverImageURL: {
-      type: String,
-      required: false,
+      type: String, // cloudnary URL 
+      required: true,
     },
     createdBy: {
       type: Schema.Types.ObjectId,

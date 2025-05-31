@@ -1,51 +1,16 @@
-require("dotenv").config();
-const path = require("path");
-const express = require("express");
-const mongoose = require("mongoose");
-const cookiePaser = require("cookie-parser");
-const cors =require('cors');
-const Blog = require("./models/blog");
+const app =require("./app.js");
+const dotenv = require("dotenv");
+dotenv.config({ path: "./config.env" });
+const port = process.env.PORT;
+const  connectDB  = require("./src/db/index.db.js");
 
-
-const userRoute = require("./routes/user");
-const blogRoute = require("./routes/blog");
-
-const {
-  checkForAuthenticationCookie,
-} = require("./middlewares/authentication");
-
-const app = express();
-// stting cors of frontend
-app.use(
-  cors({
-    origin: 'http://localhost:5173/',
-  }))
-  ;
-
-// const db =process.env.dbPORT;
-// console.log(db);
-
-mongoose
-  .connect(process.env.dbPORT)
-  .then((e) => console.log("MongoDB Connected"));
-
-app.set("view engine", "ejs");
-app.set("views", path.resolve("./views"));
-
-app.use(express.urlencoded({ extended: false }));
-app.use(cookiePaser());
-app.use(checkForAuthenticationCookie("token"));
-app.use(express.static(path.resolve("./public")));
-
-app.get("/", async (req, res) => {
-  const allBlogs = await Blog.find({});
-  res.render("home", {
-    user: req.user,
-    blogs: allBlogs,
-  });
-});
-
-app.use("/user", userRoute);
-app.use("/blog", blogRoute);
-
-app.listen(process.env.PORT || 8000, () => console.log(`Server Started at PORT:${process.env.PORT}`));
+(async () => {
+  try {
+    await connectDB();
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Failed to start the server:", error);
+  }
+})();
